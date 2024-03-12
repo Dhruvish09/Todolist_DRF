@@ -12,10 +12,11 @@ Swagger URL: http://127.0.0.1:8000/swagger/
 Redoc URL: http://127.0.0.1:8000/redoc/
 
 
+
 Setup Project Steps:
 
 **Run Migrations:**
-   python manage.py makemigrations or python manage.py makemigrations restapp
+   python manage.py makemigrations |or| python manage.py makemigrations restapp
    python manage.py migrate
 
 **Create Superuser (Optional):**
