@@ -17,6 +17,7 @@ Setup Project Steps:
 
 **Run Migrations:**
    python manage.py makemigrations |or| python manage.py makemigrations restapp
+   
    python manage.py migrate
 
 **Create Superuser (Optional):**
