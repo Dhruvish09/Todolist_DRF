@@ -145,13 +145,15 @@ def get_tokens_for_user(user):
 
 class UserRegistrationView(generics.GenericAPIView):
     renderer_classes = [UserRenderer]
-    serializer_class = UserSerializer
+    serializer_class = RegisterSerializer
+    
     def post(self, request, format=None):
         serializer = RegisterSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.save()
-        token = get_tokens_for_user(user)
-        return Response({'token':token, 'msg':'Registration Successful'}, status=status.HTTP_201_CREATED)
+        if serializer.is_valid():
+            user = serializer.save()
+            token = get_tokens_for_user(user)
+            return Response({'token': token, 'msg': 'Registration Successful'}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class UserLoginView(generics.GenericAPIView):
     renderer_classes = [UserRenderer]
@@ -159,13 +161,21 @@ class UserLoginView(generics.GenericAPIView):
     
     def post(self, request, format=None):
         serializer = LoginSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        username = serializer.data.get('username')
-        password = serializer.data.get('password')
-        user = authenticate(username=username, password=password)
-        if user is not None:
-          token = get_tokens_for_user(user)
-          return Response({'token':token,'username': user.username,'user_id': user.pk, 'msg':'Login Success'}, status=status.HTTP_200_OK)
-        else:
-          return Response({'errors':{'non_field_errors':['Email or Password is not Valid']}}, status=status.HTTP_404_NOT_FOUND)
+        if serializer.is_valid():
+            username = serializer.validated_data.get('username')
+            password = serializer.validated_data.get('password')
+            user = authenticate(username=username, password=password)
+            if user is not None:
+                token = get_tokens_for_user(user)
+                return Response({'token': token, 'username': user.username, 'user_id': user.pk, 'msg': 'Login Success'}, status=status.HTTP_200_OK)
+            else:
+                return Response({'errors': {'non_field_errors': ['Username or Password is not valid.']}}, status=status.HTTP_404_NOT_FOUND)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class UserProfileView(generics.RetrieveUpdateAPIView):
+    serializer_class = UserSerializer
+    queryset = User.objects.all()
+
+    def get_object(self):
+        return self.request.user
 
